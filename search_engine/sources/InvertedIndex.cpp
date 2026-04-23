@@ -28,20 +28,24 @@ std::vector<Entry> indexingOneWord(const std::string& keyWord,
             position = input_docs[i].find(keyWord, position);
             if(position != std::string::npos)
             {
-                if (((input_docs[i][position-1] < 'A' || input_docs[i][position-1] > 'Z')
-                    && (input_docs[i][position-1] < 'a' || input_docs[i][position-1] > 'z'))
-                    && ((input_docs[i][position+keyWord.length()] < 'A' || input_docs[i][position+keyWord.length()] > 'Z')
-                    && (input_docs[i][position+keyWord.length()] < 'a' || input_docs[i][position+keyWord.length()] > 'z')))
+                if (((input_docs[i][position-1] < 'a' || input_docs[i][position-1] > 'z')
+                    || input_docs[i][position-1] == '\n'|| position == 0)
+                    && ((input_docs[i][position+keyWord.length()] < 'a' || input_docs[i][position+keyWord.length()] > 'z')
+                    || input_docs[i][position+keyWord.length()] == '\n'|| input_docs[i][position+keyWord.length()] == '\0'))
                 {
                     entry.count++;
                 }
                 position += keyWord.length();
             }
         }
-        oneWordEntries.emplace_back(entry);
+        if (entry.count != 0)
+        {
+            oneWordEntries.emplace_back(entry);
+        }
         entry.count = 0;
-        entryUpdate.unlock();
         position = 0;
+        entryUpdate.unlock();
+
         //
     }
     return oneWordEntries;
@@ -60,15 +64,15 @@ void InvertedIndex::UpdateDocumentBase(const std::vector<std::string>& input_doc
 
     std::vector<std::string> foundKeyWords;
     std::vector<std::string> keyWordsFromOneDoc;
-    for (const auto & input_doc : input_docs)
+    for (int i = 0; i < input_docs.size(); i++)
     {
-        threadsKeyWordsFromOneDoc.emplace_back(uniqueWords,std::ref(keyWordsFromOneDoc),input_doc);
+        threadsKeyWordsFromOneDoc.emplace_back(GetUniqueWordsFromString,std::ref(keyWordsFromOneDoc),input_docs[i],i, false);
     }
 
     for (int i = 0; i < input_docs.size(); i++)
     {
         threadsKeyWordsFromOneDoc[i].join();
-        threadsAllKeyWords.emplace_back(getUniqueWords,std::ref(foundKeyWords), std::ref(keyWordsFromOneDoc));
+        threadsAllKeyWords.emplace_back(GetUniqueWordsFromVector,std::ref(foundKeyWords), std::ref(keyWordsFromOneDoc));
     }
 
     for (auto& thread : threadsAllKeyWords)

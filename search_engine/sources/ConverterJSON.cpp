@@ -13,9 +13,22 @@ nlohmann::json getConfigFile()
     nlohmann::json config;
     if (std::ifstream configFile("config.json"); configFile.is_open())
     {
-        configFile >> config;
-        configFile.close();
+        try
+        {
+            configFile >> config;
+            configFile.close();
+        }
+        catch (...)
+        {
+            throw std::runtime_error("Config file is either empty or contains mistakes in formatting for JSON");
+        }
     }
+
+    if (config["config"]["version"] != "0.7")
+    {
+        throw std::runtime_error("config.json has incorrect file version");
+    }
+
     return config;
 }
 
@@ -24,9 +37,23 @@ nlohmann::json getRequestsFile()
     nlohmann::json requests;
     if (std::ifstream requestsFile("requests.json"); requestsFile.is_open())
     {
-        requestsFile >> requests;
-        requestsFile.close();
+        try
+        {
+            requestsFile >> requests;
+            requestsFile.close();
+
+        }
+        catch (...)
+        {
+            throw std::runtime_error("Requests file is either empty or contains mistakes in formatting for JSON");
+        }
     }
+
+    if (requests["requests"].size() > 1000)
+    {
+        throw std::runtime_error("Requests file contains more than 1000 requests");
+    }
+
     return requests;
 }
 
@@ -34,98 +61,135 @@ ConverterJSON::ConverterJSON(){}
 
 std::vector<std::string> ConverterJSON::GetTextDocuments()
 {
-    if (nlohmann::json config = getConfigFile(); config != nullptr)
+    try
     {
-        std::vector<std::string> strFromFiles;
-        std::string strFromFile;
-        std::string paragraphFromFile;
-        for (auto& file : config["files"])
+        if (nlohmann::json config = getConfigFile(); config != nullptr)
         {
-            if (std::ifstream textFile(file.get<std::string>()); textFile.is_open())
+            std::vector<std::string> strFromFiles;
+            std::string strFromFile;
+            std::string paragraphFromFile;
+            for (auto& file : config["files"])
             {
-                while(!textFile.eof())
-                {
-                    std::getline(textFile, paragraphFromFile);
-                    strFromFile += paragraphFromFile += "\n";
+                try {
+                    if (std::ifstream textFile(file.get<std::string>()); textFile.is_open())
+                    {
+                        while(!textFile.eof())
+                        {
+                            std::getline(textFile, paragraphFromFile);
+                            strFromFile += paragraphFromFile += "\n";
+                        }
+
+                        strFromFiles.push_back(strFromFile);
+                        strFromFile = "";
+                        paragraphFromFile = "";
+                    }
+                    else
+                    {
+                        throw std::runtime_error("couldn't find " + file.get<std::string>());
+                    }
                 }
-                strFromFiles.push_back(strFromFile);
-                strFromFile = "";
-                paragraphFromFile = "";
+                catch (std::exception& e)
+                {
+                    std::cerr << e.what() << std::endl;
+                }
             }
+            if (strFromFiles.empty())
+            {
+                throw std::runtime_error("config file doesn't include files to search through");
+            }
+            return strFromFiles;
         }
-        return strFromFiles;
+        throw std::runtime_error("Could not find config file");
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::terminate();
     }
 }
 
 int ConverterJSON::GetResponsesLimit()
 {
-    if (nlohmann::json config = getConfigFile(); config != nullptr)
+    try
     {
-        return config["config"]["max_responses"].get<int>();
+        if (nlohmann::json config = getConfigFile(); config != nullptr)
+        {
+            if (config["config"]["max_responses"] != nullptr)
+            {
+                return config["config"]["max_responses"].get<int>();
+            }
+
+            throw std::runtime_error("Could not find max_responses");
+
+        }
+        throw std::runtime_error("Could not find config file");
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::terminate();
     }
 }
 
 std::vector<std::string> ConverterJSON::GetRequests()
 {
-    if (nlohmann::json config = getRequestsFile(); config != nullptr)
+    try
     {
-        std::vector<std::string> requests;
-        for (auto& request : config["requests"])
+        if (nlohmann::json config = getRequestsFile(); config != nullptr)
         {
-            requests.emplace_back(request);
+            std::vector<std::string> requests;
+            for (auto& request : config["requests"])
+            {
+                requests.emplace_back(request);
+            }
+            return requests;
         }
-        return requests;
+        throw std::runtime_error("Could not find requests file");
     }
+    catch (std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::terminate();
+    }
+
 }
 
-void ConverterJSON::putAnswers(std::vector<std::vector<RelativeIndex>> answers)
+void ConverterJSON::PutAnswers(std::vector<std::vector<RelativeIndex>>& answers)
 {
     std::ofstream answersFile("answers.json");
     nlohmann::json answersJson;
 
+    std::string requestId;
+
     for (int i = 0; i < answers.size(); i++)
     {
-        answersJson["answers"]["request " + std::to_string(i)]["result"];
+        if (i < 9)
+        {
+            requestId = "request00" + std::to_string(i+1);
+        }
+        else if (i > 98)
+        {
+            requestId = "request" + std::to_string(i+1);
+        }
+        else
+        {
+            requestId = "request0" + std::to_string(i+1);
+        }
         if (!answers[i].empty())
         {
-            answersJson["answers"]["request " + std::to_string(i)]["result"] = "true";
+            answersJson["answers"][requestId]["result"] = "true";
             for (int j = 0; j < answers[i].size(); j++)
             {
-                answersJson["answers"]["request " + std::to_string(i)]["relevance"] += {{"doc_id",answers[i][j].doc_id},{"rank",answers[i][j].rank}};
+                answersJson["answers"][requestId]["relevance"] += {{"doc_id",answers[i][j].doc_id},{"rank",answers[i][j].rank}};
 
             }
         }
         else
         {
-            answersJson["answers"]["request " + std::to_string(i)]["result"] = "false";
+            answersJson["answers"][requestId]["result"] = "false";
         }
 
 
     }
-
-    std::cout << "answers:" << std::endl;
-    for (int i = 0; i < answers.size(); i++)
-    {
-        std::cout << "request " + std::to_string(i) << std::endl;
-        if (!answers[i].empty())
-        {
-            std::cout << "true" << std::endl;
-            for (int j = 0; j < answers[i].size(); j++)
-            {
-
-                    std::cout << "doc_id: " << answers[i][j].doc_id;
-                    std::cout << ", " << "rank: " << answers[i][j].rank << std::endl;
-
-            }
-        }
-        else
-        {
-            std::cout << "false" << std::endl;
-        }
-
-
-
-    }
-
     answersFile << std::setw(4) << answersJson;
 }
