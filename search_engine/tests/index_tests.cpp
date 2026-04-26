@@ -6,8 +6,8 @@
 using namespace std;
 
 void TestInvertedIndexFunctionality (
-        const vector<string>& docs,
-        const vector<string>& requests,
+         vector<string>& docs,
+         vector<string>& requests,
         const std::vector<vector<Entry>>& expected )
 {
     std::vector<std::vector<Entry>> result;
@@ -24,12 +24,12 @@ void TestInvertedIndexFunctionality (
 }
 
 TEST(TestCaseInvertedIndex, TestBasic) {
-    const vector<string> docs = {
+     vector<string> docs = {
             "london is the capital of great britain",
             "big ben is the nickname for the Great bell of the striking clock"
     };
-    const vector<string> requests = {"london", "the"};
-    const vector<vector<Entry>> expected = {
+     vector<string> requests = {"london", "the"};
+     vector<vector<Entry>> expected = {
             {
                     {0, 1}
             }, {
@@ -40,13 +40,13 @@ TEST(TestCaseInvertedIndex, TestBasic) {
 }
 
 TEST(TestCaseInvertedIndex, TestBasic2) {
-    const vector<string> docs = {
+     vector<string> docs = {
             "milk milk milk milk water water water",
             "milk water water",
             "milk milk milk milk milk water water water water water",
             "americano cappuccino"
     };
-    const vector<string> requests = {"milk", "water", "cappuccino"};
+     vector<string> requests = {"milk", "water", "cappuccino"};
     const vector<vector<Entry>> expected = {
             {
                     {0, 4}, {1, 1}, {2, 5}
@@ -60,11 +60,11 @@ TEST(TestCaseInvertedIndex, TestBasic2) {
 }
 
 TEST(TestCaseInvertedIndex, TestInvertedIndexMissingWord) {
-    const vector<string> docs = {
+     vector<string> docs = {
             "a  b  c  d  e  f  g  h  i  j  k  l",
             "statement"
     };
-    const vector<string> requests = {"m", "statement"};
+     vector<string> requests = {"m", "statement"};
     const vector<vector<Entry>> expected = {
             {
 

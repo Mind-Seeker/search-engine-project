@@ -24,7 +24,7 @@ class InvertedIndex
 public:
     InvertedIndex();
 
-    void UpdateDocumentBase(const std::vector<std::string>& input_docs);
+    void UpdateDocumentBase( std::vector<std::string>& input_docs);
 
     std::vector<Entry> GetWordCount (const std::string& word);
 

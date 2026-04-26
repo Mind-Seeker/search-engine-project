@@ -31,7 +31,7 @@ inline void GetUniqueWordsFromVector(std::vector<std::string>& uniqueWords,
     }
 }
 
-inline void GetUniqueWordsFromString(std::vector<std::string>& keyWords, const std::string& input_doc,
+inline void GetUniqueWordsFromString(std::vector<std::string>& keyWords, std::string& input_doc,
                                     int index, const bool isARequest)
 {
     ++index;
@@ -47,6 +47,10 @@ inline void GetUniqueWordsFromString(std::vector<std::string>& keyWords, const s
             || (input_doc[i] >= 'A' && input_doc[i] <= 'Z'))
         {
             keyWordsCounting.lock();
+            if (input_doc[i] >= 'A' && input_doc[i] <= 'Z')
+            {
+                input_doc[i] += 32;
+            }
             foundWord += input_doc[i];
             keyWordsCounting.unlock();
         }
@@ -57,6 +61,14 @@ inline void GetUniqueWordsFromString(std::vector<std::string>& keyWords, const s
         || input_doc[i+1] == 't' || input_doc[i+1] == 'T'))
         {
             keyWordsCounting.lock();
+            if (input_doc[i] >= 'A' && input_doc[i] <= 'Z')
+            {
+                input_doc[i] += 32;
+            }
+            if (input_doc[i+1] >= 'A' && input_doc[i+1] <= 'Z')
+            {
+                input_doc[i+1] += 32;
+            }
             foundWord += input_doc[i];
             foundWord += input_doc[i+1];
             ++i;
@@ -76,6 +88,18 @@ inline void GetUniqueWordsFromString(std::vector<std::string>& keyWords, const s
         || (input_doc[i+1] == 'L' && (input_doc[i+2] == 'l' || input_doc[i+2] == 'L'))))
         {
             keyWordsCounting.lock();
+            if (input_doc[i] >= 'A' && input_doc[i] <= 'Z')
+            {
+                input_doc[i] += 32;
+            }
+            if (input_doc[i+1] >= 'A' && input_doc[i+1] <= 'Z')
+            {
+                input_doc[i+1] += 32;
+            }
+            if (input_doc[i+2] >= 'A' && input_doc[i+2] <= 'Z')
+            {
+                input_doc[i+2] += 32;
+            }
             foundWord += input_doc[i];
             foundWord += input_doc[i+1];
             foundWord += input_doc[i+2];

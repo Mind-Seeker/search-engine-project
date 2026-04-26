@@ -6,14 +6,14 @@
 using namespace std;
 
 TEST(TestCaseSearchServer, TestSimple) {
-    const vector<string> docs = {
+     vector<string> docs = {
             "milk milk milk milk water water water",
             "milk water water",
             "milk milk milk milk milk water water water water water",
             "americano cappuccino"
     };
 
-    const vector<string> request = {"milk water", "sugar"};
+     vector<string> request = {"milk water", "sugar"};
     const std::vector<vector<RelativeIndex>> expected = {
             {
                     {2, 1},
@@ -36,7 +36,7 @@ TEST(TestCaseSearchServer, TestSimple) {
 }
 
 TEST(TestCaseSearchServer, TestTop5) {
-    const vector<string> docs = {
+     vector<string> docs = {
             "london is the capital of great britain",
             "paris is the capital of france",
             "berlin is the capital of germany",
@@ -61,7 +61,7 @@ TEST(TestCaseSearchServer, TestTop5) {
             "warsaw is the capital of poland",
     };
 
-    const vector<string> request = {"moscow is the capital of russia"};
+     vector<string> request = {"moscow is the capital of russia"};
     const std::vector<vector<RelativeIndex>> expected = {
             {
                     {7, 1},

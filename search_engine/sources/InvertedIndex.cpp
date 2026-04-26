@@ -56,7 +56,7 @@ InvertedIndex::InvertedIndex()
 {
 }
 
-void InvertedIndex::UpdateDocumentBase(const std::vector<std::string>& input_docs)
+void InvertedIndex::UpdateDocumentBase( std::vector<std::string>& input_docs)
 {
     docs = input_docs;
     std::vector<std::thread> threadsKeyWordsFromOneDoc;
@@ -66,7 +66,7 @@ void InvertedIndex::UpdateDocumentBase(const std::vector<std::string>& input_doc
     std::vector<std::string> keyWordsFromOneDoc;
     for (int i = 0; i < input_docs.size(); i++)
     {
-        threadsKeyWordsFromOneDoc.emplace_back(GetUniqueWordsFromString,std::ref(keyWordsFromOneDoc),input_docs[i],i, false);
+        threadsKeyWordsFromOneDoc.emplace_back(GetUniqueWordsFromString,std::ref(keyWordsFromOneDoc),std::ref(input_docs[i]),i, false);
     }
 
     for (int i = 0; i < input_docs.size(); i++)

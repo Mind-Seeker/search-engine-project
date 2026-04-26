@@ -26,7 +26,7 @@ public:
 
     SearchServer(InvertedIndex& idx);
 
-    std::vector<std::vector<RelativeIndex>> Search (const std::vector<std::string>& queries_input);
+    std::vector<std::vector<RelativeIndex>> Search ( std::vector<std::string>& queries_input);
 private:
     InvertedIndex _index;
 };
