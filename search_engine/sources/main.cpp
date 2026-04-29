@@ -1,11 +1,9 @@
+#include <iostream>
+#include <ostream>
+
 #include "ConverterJSON.h"
 #include "InvertedIndex.h"
 #include "SearchServer.h"
-
-#include <thread>
-
-
-
 
 int main()
 {
@@ -13,7 +11,7 @@ int main()
 
     auto docsTexts = ConverterJSON::GetTextDocuments();
 
-
+    std::cout << ConverterJSON::GetName() << std::endl;
 
     indexing.UpdateDocumentBase(docsTexts);
 

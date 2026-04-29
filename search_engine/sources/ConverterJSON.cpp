@@ -59,6 +59,37 @@ nlohmann::json getRequestsFile()
 
 ConverterJSON::ConverterJSON(){}
 
+std::string ConverterJSON::GetName()
+{
+    std::string nameStr;
+    try
+    {
+        if (nlohmann::json config = getConfigFile(); config != nullptr)
+        {
+            try
+            {
+                nameStr = config["config"]["name"].get<std::string>();
+
+                if (nameStr.empty())
+                {
+                    throw std::runtime_error("config file doesn't include the name of the program");
+                }
+            }
+            catch (std::exception& e)
+            {
+                std::cerr << e.what() << std::endl;
+            }
+            return nameStr;
+        }
+        throw std::runtime_error("Could not find config file");
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::terminate();
+    }
+}
+
 std::vector<std::string> ConverterJSON::GetTextDocuments()
 {
     try

@@ -15,6 +15,8 @@ class ConverterJSON
 public:
     ConverterJSON();
 
+    static std::string GetName();
+
     static std::vector<std::string> GetTextDocuments();
 
     static int GetResponsesLimit();
